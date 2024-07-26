@@ -1,26 +1,43 @@
-﻿using PropsGen.Commands;
-using System.Diagnostics;
-using System.Windows.Input;
+﻿using Prism.Commands;
 
 namespace PropsGen.ViewModels
 {
     internal class ConnectionViewModel : ViewModelBase
     {
-        public ICommand OnConnectCommand { get; private set; }
+        public bool IsConnected { get; private set; } = false;
+
+        public DelegateCommand ConnectCommand { get; }
+        public DelegateCommand DisconnectCommand { get; }
 
         public ConnectionViewModel()
         {
-            OnConnectCommand = new DelegateCommand( OnConnect, OnCanConnect );
+            ConnectCommand = new DelegateCommand(
+                ExecuteConnect,
+                () => { return !IsConnected; }
+            );
+
+            DisconnectCommand = new DelegateCommand(
+                ExecuteDisconnect,
+                () => { return IsConnected; }
+            );
         }
 
-        private void OnConnect(object? foo)
+        private void ExecuteConnect()
         {
-            Trace.WriteLine( "Connected!" );
+            IsConnected = true;
+            UpdateCommandState();
         }
 
-        private bool OnCanConnect(object? foo)
+        private void ExecuteDisconnect()
         {
-            return true;
+            IsConnected = false;
+            UpdateCommandState();
+        }
+
+        private void UpdateCommandState()
+        {
+            ConnectCommand.RaiseCanExecuteChanged();
+            DisconnectCommand.RaiseCanExecuteChanged();
         }
     }
 }
