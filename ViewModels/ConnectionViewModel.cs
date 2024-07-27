@@ -1,13 +1,16 @@
 ﻿using Prism.Commands;
+using PropsGen.Services;
 
 namespace PropsGen.ViewModels
 {
     internal class ConnectionViewModel : ViewModelBase
     {
-        public bool IsConnected { get; private set; } = false;
+        public bool IsConnected => _databaseAccessor is not null;
 
         public DelegateCommand ConnectCommand { get; }
         public DelegateCommand DisconnectCommand { get; }
+
+        private IDatabaseAccessor? _databaseAccessor = null;
 
         public ConnectionViewModel()
         {
@@ -24,13 +27,18 @@ namespace PropsGen.ViewModels
 
         private void ExecuteConnect()
         {
-            IsConnected = true;
+            _databaseAccessor = DatabaseAccessorFactory.GetDatabaseAccessor();
+            if ( !_databaseAccessor.Connect() )
+                _databaseAccessor = null;
+
             UpdateCommandState();
         }
 
         private void ExecuteDisconnect()
         {
-            IsConnected = false;
+            _databaseAccessor?.Disconnect();
+            _databaseAccessor = null;
+
             UpdateCommandState();
         }
 

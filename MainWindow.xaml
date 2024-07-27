@@ -12,6 +12,6 @@
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <Grid>
-        <views:ConnectionControl />
+        <views:PropsControl />
     </Grid>
 </Window>
