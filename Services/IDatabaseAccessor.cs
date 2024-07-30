@@ -5,6 +5,6 @@
         bool Connect();
         bool Disconnect();
 
-        string GetProps();
+        string GetProps( out string error );
     }
 }

@@ -16,21 +16,12 @@ namespace PropsGen.Services
             return true;
         }
 
-        public string GetProps()
-        {
-            //#SB: populate from database
-            var props = new Props();
-            props.GasProps.EUR = 1500;
-            props.GasProps.S_G = 0.1;
-            props.GasProps.H_2_S = 0.5;
-            props.GasProps.C_O_2 = 0.4;
-
-            return JsonSerializer.Serialize( props );
-        }
-
-        private bool ExecuteCommnd( string sql, out string error )
+        //#SB: probably move to a common class.
+        public string GetProps( out string error )
         {
             error = string.Empty;
+
+            var props = new Props();
 
             try
             {
@@ -38,6 +29,22 @@ namespace PropsGen.Services
                 {
                     connection.Open();
 
+                    string query = @"select EUR, S_G, H_2_S, C_O_2 from GAS_PROPERTIES;";
+
+                    var command = new SqlCommand( query, connection );
+                    var result = command.ExecuteReader();
+
+                    if( result is null || !result.HasRows || result.FieldCount != Props.FIELD_COUNT )
+                        return string.Empty;
+
+                    if ( result.Read() )
+                    {
+                        props.GasProps.EUR = result.GetDouble( 0 );
+                        props.GasProps.S_G = result.GetDouble( 1 );
+                        props.GasProps.H_2_S = result.GetDouble( 2 );
+                        props.GasProps.C_O_2 = result.GetDouble( 3 );
+                    }
+                
                     connection.Close();
                 }
             }
@@ -46,7 +53,7 @@ namespace PropsGen.Services
                 error = ex.Message;
             }
 
-            return string.IsNullOrEmpty( error );
+            return JsonSerializer.Serialize( props );
         }
 
         private string GetConnectionString()

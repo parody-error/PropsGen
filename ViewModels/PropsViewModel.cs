@@ -23,7 +23,12 @@ namespace PropsGen.ViewModels
             //#SB: refactor this, this probably belongs in some shared class.
             _databaseAccessor = DatabaseAccessorFactory.GetDatabaseAccessor();
 
-            Trace.WriteLine( _databaseAccessor.GetProps() );
+            Trace.WriteLine( _databaseAccessor.GetProps( out string error ) );
+
+            if( !string.IsNullOrEmpty( error ) )
+            {
+                Trace.WriteLine( error );
+            }
         }
     }
 }

@@ -16,8 +16,9 @@ namespace PropsGen.Services
             return true;
         }
 
-        public string GetProps()
+        public string GetProps( out string error )
         {
+            error = string.Empty;
             return "{}";
         }
     }
