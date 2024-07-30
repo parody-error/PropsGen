@@ -6,6 +6,8 @@ namespace PropsGen.Services
 {
     internal class SQLServerAccessor : IDatabaseAccessor
     {
+        private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true };
+
         public bool Connect()
         {
             return true;
@@ -53,7 +55,7 @@ namespace PropsGen.Services
                 error = ex.Message;
             }
 
-            return JsonSerializer.Serialize( props );
+            return JsonSerializer.Serialize( props, _jsonSerializerOptions );
         }
 
         private string GetConnectionString()

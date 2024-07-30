@@ -1,12 +1,12 @@
 ﻿using Prism.Commands;
 using PropsGen.Services;
-using System.Diagnostics;
 
 namespace PropsGen.ViewModels
 {
     internal class PropsViewModel : ViewModelBase
     {
         public DelegateCommand GetPropsCommand { get; }
+        public string PropsJSON { get; private set; } = string.Empty;
 
         private IDatabaseAccessor? _databaseAccessor = null;
 
@@ -23,12 +23,10 @@ namespace PropsGen.ViewModels
             //#SB: refactor this, this probably belongs in some shared class.
             _databaseAccessor = DatabaseAccessorFactory.GetDatabaseAccessor();
 
-            Trace.WriteLine( _databaseAccessor.GetProps( out string error ) );
+            var json = _databaseAccessor.GetProps( out string error );
+            PropsJSON = !string.IsNullOrEmpty( error ) ? error : json;
 
-            if( !string.IsNullOrEmpty( error ) )
-            {
-                Trace.WriteLine( error );
-            }
+            OnPropertyChanged( nameof( PropsJSON ) );
         }
     }
 }
