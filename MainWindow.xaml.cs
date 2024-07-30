@@ -9,7 +9,7 @@ namespace PropsGen
         {
             InitializeComponent();
 
-            var dataContext = new PropsViewModel();
+            var dataContext = new MainViewModel();
             DataContext = dataContext;
         }
     }
