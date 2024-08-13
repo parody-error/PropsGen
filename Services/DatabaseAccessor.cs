@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace PropsGen.Services
 {
-    internal class SQLServerAccessor : IDatabaseAccessor
+    internal class DatabaseAccessor : IDatabaseAccessor
     {
         private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true };
 

@@ -4,7 +4,7 @@
     {
         internal static IDatabaseAccessor GetDatabaseAccessor()
         {
-            return new SQLServerAccessor();
+            return new DatabaseAccessor();
         }
     }
 }
