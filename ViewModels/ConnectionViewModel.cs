@@ -7,6 +7,20 @@ namespace PropsGen.ViewModels
     {
         public bool IsConnected => _databaseAccessor is not null;
 
+        private string _databaseName = string.Empty;
+        public string DatabaseName
+        {
+            get => _databaseName;
+            set
+            {
+                _databaseName = value;
+
+                UpdateCommandState();
+            }
+        }
+
+        public ICollection<string> Databases { get; } = new List<string>() { "Red", "Yellow", "Blue" };
+
         public DelegateCommand ConnectCommand { get; }
         public DelegateCommand DisconnectCommand { get; }
 
@@ -16,7 +30,7 @@ namespace PropsGen.ViewModels
         {
             ConnectCommand = new DelegateCommand(
                 ExecuteConnect,
-                () => { return !IsConnected; }
+                () => { return !IsConnected && !string.IsNullOrEmpty( _databaseName ); }
             );
 
             DisconnectCommand = new DelegateCommand(
@@ -46,6 +60,8 @@ namespace PropsGen.ViewModels
         {
             ConnectCommand.RaiseCanExecuteChanged();
             DisconnectCommand.RaiseCanExecuteChanged();
+
+            OnPropertyChanged( nameof( IsConnected ) );
         }
     }
 }
