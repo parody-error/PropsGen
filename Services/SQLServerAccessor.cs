@@ -18,6 +18,11 @@ namespace PropsGen.Services
             return true;
         }
 
+        public IEnumerable<string> GetDatabaseNames()
+        {
+            return new List<string> { "Red", "Yellow", "Blue", "Green" };
+        }
+
         //#SB: probably move to a common class.
         public string GetProps( out string error )
         {
