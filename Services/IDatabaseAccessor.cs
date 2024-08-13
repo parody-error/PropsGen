@@ -2,11 +2,7 @@
 {
     internal interface IDatabaseAccessor
     {
-        //#SB: probably don't actually need these.
-        bool Connect();
-        bool Disconnect();
-
-        IEnumerable<string> GetDatabaseNames();
+        IEnumerable<string> GetDatabaseNames( out string error );
 
         string GetProps( out string error );
     }

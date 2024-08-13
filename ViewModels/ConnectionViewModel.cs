@@ -1,4 +1,5 @@
 ﻿using Prism.Commands;
+using PropsGen.Services;
 
 namespace PropsGen.ViewModels
 {
@@ -19,13 +20,17 @@ namespace PropsGen.ViewModels
             }
         }
 
-        //#SB: get from the database
-        public ICollection<string> Databases { get; } = new List<string>() { "Red", "Yellow", "Blue" };
+        public ICollection<string> Databases { get; }
 
         public DelegateCommand ConnectCommand { get; }
 
         public ConnectionViewModel()
         {
+            var databaseAccessor = DatabaseAccessorFactory.GetDatabaseAccessor();
+            Databases = databaseAccessor.GetDatabaseNames( out string error ).ToList();
+
+            _databaseName = Databases.FirstOrDefault( name => !string.IsNullOrEmpty( name ) ) ?? string.Empty;
+
             ConnectCommand = new DelegateCommand(
                 ExecuteConnect,
                 () => { return !string.IsNullOrEmpty( _databaseName ); }

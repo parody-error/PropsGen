@@ -8,22 +8,42 @@ namespace PropsGen.Services
     {
         private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true };
 
-        public bool Connect()
+        public IEnumerable<string> GetDatabaseNames( out string error )
         {
-            return true;
+            error = string.Empty;
+
+            var databaseNames = new List<string>();
+
+            try
+            {
+                using ( var connection = new SqlConnection( GetConnectionString() ) )
+                {
+                    connection.Open();
+
+                    string query = @"select name from sys.databases where name not in ('master', 'tempdb', 'model', 'msdb') order by name;";
+
+                    var command = new SqlCommand( query, connection );
+                    var result = command.ExecuteReader();
+
+                    if ( result is null || !result.HasRows )
+                        return databaseNames;
+
+                    while ( result.Read() )
+                    {
+                        databaseNames.Add( result.GetString( 0 ) );
+                    }
+
+                    connection.Close();
+                }
+            }
+            catch( Exception ex )
+            {
+                error = ex.Message;
+            }
+
+            return databaseNames;
         }
 
-        public bool Disconnect()
-        {
-            return true;
-        }
-
-        public IEnumerable<string> GetDatabaseNames()
-        {
-            return new List<string> { "Red", "Yellow", "Blue", "Green" };
-        }
-
-        //#SB: probably move to a common class.
         public string GetProps( out string error )
         {
             error = string.Empty;
@@ -36,6 +56,7 @@ namespace PropsGen.Services
                 {
                     connection.Open();
 
+                    //#SB: probably split up into multiple functions (oil, gas, ....)
                     string query = @"select EUR, S_G, H_2_S, C_O_2 from GAS_PROPERTIES;";
 
                     var command = new SqlCommand( query, connection );
@@ -66,7 +87,7 @@ namespace PropsGen.Services
         private string GetConnectionString()
         {
             //#SB: use member variables
-            return $@"Data Source=OBERON\SQLSERVER2022;DATABASE=TestDatabase;Integrated Security=True";
+            return $@"Data Source=.\SQLSERVER2022;DATABASE=TestDatabase;Integrated Security=True";
         }
     }
 }
