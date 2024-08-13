@@ -14,13 +14,6 @@
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
     <Grid>
-        <TabControl Margin="0,0,0,10" TabStripPlacement="Top">
-            <TabItem Name="Connection" Header="Connection">
-                <views:ConnectionControl DataContext="{Binding ConnectionViewModel}" />
-            </TabItem>
-            <TabItem Name="Props" Header="Props">
-                <views:PropsControl DataContext="{Binding PropsViewModel}" />
-            </TabItem>
-        </TabControl>
+        <views:PropsControl DataContext="{Binding PropsViewModel}" />
     </Grid>
 </Window>
