@@ -1,6 +1,4 @@
-﻿using System.Security.RightsManagement;
-
-namespace PropsGen.Models
+﻿namespace PropsGen.Models
 {
     internal class BasicReservoir
     {
