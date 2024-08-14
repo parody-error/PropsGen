@@ -12,11 +12,18 @@ namespace PropsGen.Models
         public double C_O_2 { get; set; }
     }
 
+    internal class Parameters
+    {
+        public double temperature { get; set; }
+        public double pressure { get; set; }
+    }
+
     internal class Props
     {
         // Total number of fields to be read from the database.
         public static readonly int FIELD_COUNT = GasProps.FIELD_COUNT;
 
         public GasProps GasProps { get; set; } = new GasProps();
+        public Parameters parameters { get; set; } = new Parameters();
     }
 }

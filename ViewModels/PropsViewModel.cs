@@ -1,5 +1,6 @@
 ﻿using Prism.Commands;
 using PropsGen.Services;
+using System.Windows;
 using System.Windows.Threading;
 
 namespace PropsGen.ViewModels
@@ -78,6 +79,11 @@ namespace PropsGen.ViewModels
 
             var json = databaseAccessor.GetProps( DatabaseName, EntityID, out string error );
             PropsJSON = !string.IsNullOrEmpty( error ) ? error : json;
+
+            if( string.IsNullOrEmpty( error ) )
+            {
+                Clipboard.SetText( PropsJSON );
+            }
 
             OnPropertyChanged( nameof( PropsJSON ) );
         }

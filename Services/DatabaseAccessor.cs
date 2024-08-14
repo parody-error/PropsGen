@@ -139,6 +139,10 @@ namespace PropsGen.Services
 
                     connection.Close();
                 }
+
+                // Populate props with some default parameters
+                props.parameters.temperature = 530.0;
+                props.parameters.pressure = 3000.0;
             }
             catch ( Exception ex )
             {
