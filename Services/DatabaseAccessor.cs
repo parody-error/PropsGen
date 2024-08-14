@@ -6,6 +6,9 @@ namespace PropsGen.Services
 {
     internal class DatabaseAccessor : IDatabaseAccessor
     {
+        private static readonly string MASTER_DB = "master";
+        private static readonly string ERROR_INVALID_DATABASE_NAME = "An invalid database name was supplied.";
+
         private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true };
 
         public IEnumerable<string> GetDatabaseNames( out string error )
@@ -16,7 +19,7 @@ namespace PropsGen.Services
 
             try
             {
-                using ( var connection = new SqlConnection( GetConnectionString() ) )
+                using ( var connection = new SqlConnection( GetConnectionString( MASTER_DB ) ) )
                 {
                     connection.Open();
 
@@ -36,7 +39,7 @@ namespace PropsGen.Services
                     connection.Close();
                 }
             }
-            catch( Exception ex )
+            catch ( Exception ex )
             {
                 error = ex.Message;
             }
@@ -44,15 +47,21 @@ namespace PropsGen.Services
             return databaseNames;
         }
 
-        public Entity GetLaunchedEntity( out string error )
+        public Entity GetLaunchedEntity( string databaseName, out string error )
         {
             error = string.Empty;
 
-            Entity entity = new Entity();
+            if ( string.IsNullOrEmpty( databaseName ) )
+            {
+                error = ERROR_INVALID_DATABASE_NAME;
+                return new Entity();
+            }
+
+            var entity = new Entity();
 
             try
             {
-                using ( var connection = new SqlConnection( GetConnectionString() ) )
+                using ( var connection = new SqlConnection( GetConnectionString( databaseName ) ) )
                 {
                     connection.Open();
 
@@ -82,15 +91,21 @@ namespace PropsGen.Services
             return entity;
         }
 
-        public string GetProps( out string error )
+        public string GetProps( string databaseName, out string error )
         {
             error = string.Empty;
+
+            if ( string.IsNullOrEmpty( databaseName ) )
+            {
+                error = ERROR_INVALID_DATABASE_NAME;
+                return string.Empty;
+            }
 
             var props = new Props();
 
             try
             {
-                using ( var connection = new SqlConnection( GetConnectionString() ) )
+                using ( var connection = new SqlConnection( GetConnectionString( databaseName ) ) )
                 {
                     connection.Open();
 
@@ -100,7 +115,7 @@ namespace PropsGen.Services
                     var command = new SqlCommand( query, connection );
                     var result = command.ExecuteReader();
 
-                    if( result is null || !result.HasRows || result.FieldCount != Props.FIELD_COUNT )
+                    if ( result is null || !result.HasRows || result.FieldCount != Props.FIELD_COUNT )
                         return string.Empty;
 
                     if ( result.Read() )
@@ -110,7 +125,7 @@ namespace PropsGen.Services
                         props.GasProps.H_2_S = result.GetDouble( 2 );
                         props.GasProps.C_O_2 = result.GetDouble( 3 );
                     }
-                
+
                     connection.Close();
                 }
             }
@@ -122,10 +137,9 @@ namespace PropsGen.Services
             return JsonSerializer.Serialize( props, _jsonSerializerOptions );
         }
 
-        private string GetConnectionString()
+        private string GetConnectionString( string databaseName )
         {
-            //#SB: use member variables
-            return $@"Data Source=.\SQLSERVER2022;DATABASE=TestDatabase;Integrated Security=True";
+            return $@"Data Source=.\SQLSERVER2022;DATABASE={databaseName};Integrated Security=True";
         }
     }
 }

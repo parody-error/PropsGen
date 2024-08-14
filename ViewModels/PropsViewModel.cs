@@ -9,6 +9,7 @@ namespace PropsGen.ViewModels
         private readonly int QUERY_INTERVAL_IN_SECONDS = 2;
 
         public DelegateCommand GetPropsCommand { get; }
+        private bool CanExecuteGetProps => !string.IsNullOrEmpty( DatabaseName ) && !string.IsNullOrEmpty( EntityID );
 
         public string DatabaseName { get; set; } = string.Empty;
         public string PropsJSON { get; private set; } = string.Empty;
@@ -22,7 +23,7 @@ namespace PropsGen.ViewModels
                 if( string.Compare( _entityID, value, StringComparison.OrdinalIgnoreCase ) != 0)
                 {
                     _entityID = value;
-                    OnPropertyChanged( nameof( EntityID ) );
+                    GetPropsCommand.RaiseCanExecuteChanged();
                 }
             }
         }
@@ -41,14 +42,13 @@ namespace PropsGen.ViewModels
             }
         }
 
-        private IDatabaseAccessor? _databaseAccessor = null;
         private DispatcherTimer? _queryTimer = null;
 
         public PropsViewModel()
         {
             GetPropsCommand = new DelegateCommand(
                 ExecuteGetProps,
-                () => { return true; }
+                () => CanExecuteGetProps
             );
 
             StartTimer();
@@ -69,15 +69,14 @@ namespace PropsGen.ViewModels
 
         private void ExecuteGetProps()
         {
-            if ( string.IsNullOrEmpty( DatabaseName ) )
+            if ( !CanExecuteGetProps )
                 return;
 
-            //#SB: refactor this, this probably belongs in some shared class, or not a member
-            _databaseAccessor = DatabaseAccessorFactory.GetDatabaseAccessor();
-            if ( _databaseAccessor is null )
+            var databaseAccessor = DatabaseAccessorFactory.GetDatabaseAccessor();
+            if ( databaseAccessor is null )
                 return;
 
-            var json = _databaseAccessor.GetProps( out string error );
+            var json = databaseAccessor.GetProps( DatabaseName, out string error );
             PropsJSON = !string.IsNullOrEmpty( error ) ? error : json;
 
             OnPropertyChanged( nameof( PropsJSON ) );
@@ -85,15 +84,14 @@ namespace PropsGen.ViewModels
 
         private void UpdateSelectedEntity()
         {
-            //#SB: put common checks in a helper function
             if ( string.IsNullOrEmpty( DatabaseName ) )
                 return;
 
-            _databaseAccessor = DatabaseAccessorFactory.GetDatabaseAccessor();
-            if( _databaseAccessor is null )
+            var databaseAccessor = DatabaseAccessorFactory.GetDatabaseAccessor();
+            if( databaseAccessor is null )
                 return;
 
-            var entity = _databaseAccessor.GetLaunchedEntity( out string error );
+            var entity = databaseAccessor.GetLaunchedEntity( DatabaseName, out string error );
             if ( !string.IsNullOrEmpty( error ) )
                 return;
 
