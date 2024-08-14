@@ -15,6 +15,7 @@ namespace PropsGen.Views
             DataContext = connectionVM;
 
             connectionVM.OnConnectedEvent += OnDatabaseConnected;
+            connectionVM.OnCancelEvent += OnCancel;
         }
 
         public void Dispose()
@@ -30,6 +31,11 @@ namespace PropsGen.Views
         {
             DatabaseName = databaseName;
             DialogResult = !string.IsNullOrEmpty( databaseName );
+        }
+
+        private void OnCancel()
+        {
+            DialogResult = false;
         }
     }
 }
