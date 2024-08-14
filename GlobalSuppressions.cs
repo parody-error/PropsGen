@@ -5,4 +5,4 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage( "Style", "IDE1006:Naming Styles", Justification = "Conforming to expected Props names", Scope = "member", Target = "~P:PropsGen.Models.Props.parameters" )]
+[assembly: SuppressMessage( "Style", "IDE1006:Naming Styles", Justification = "Conforming to expected Props names", Scope = "namespaceanddescendants", Target = "~N:PropsGen.Models" )]
