@@ -3,6 +3,6 @@
     internal class Entity
     {
         public string EntityName { get; set; } = string.Empty;
-        public string EntityID { get; set; } = string.Empty;
+        public Guid EntityID { get; set; } = Guid.Empty;
     }
 }

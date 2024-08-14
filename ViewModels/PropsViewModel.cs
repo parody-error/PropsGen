@@ -9,18 +9,18 @@ namespace PropsGen.ViewModels
         private readonly int QUERY_INTERVAL_IN_SECONDS = 2;
 
         public DelegateCommand GetPropsCommand { get; }
-        private bool CanExecuteGetProps => !string.IsNullOrEmpty( DatabaseName ) && !string.IsNullOrEmpty( EntityID );
+        private bool CanExecuteGetProps => !string.IsNullOrEmpty( DatabaseName ) && EntityID != Guid.Empty;
 
         public string DatabaseName { get; set; } = string.Empty;
         public string PropsJSON { get; private set; } = string.Empty;
 
-        private string _entityID = string.Empty;
-        public string EntityID
+        private Guid _entityID = Guid.Empty;
+        public Guid EntityID
         {
             get => _entityID;
             private set
             {
-                if( string.Compare( _entityID, value, StringComparison.OrdinalIgnoreCase ) != 0)
+                if(  _entityID != value )
                 {
                     _entityID = value;
                     GetPropsCommand.RaiseCanExecuteChanged();
@@ -76,7 +76,7 @@ namespace PropsGen.ViewModels
             if ( databaseAccessor is null )
                 return;
 
-            var json = databaseAccessor.GetProps( DatabaseName, out string error );
+            var json = databaseAccessor.GetProps( DatabaseName, EntityID, out string error );
             PropsJSON = !string.IsNullOrEmpty( error ) ? error : json;
 
             OnPropertyChanged( nameof( PropsJSON ) );

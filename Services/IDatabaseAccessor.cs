@@ -6,10 +6,8 @@ namespace PropsGen.Services
     {
         IEnumerable<string> GetDatabaseNames( out string error );
 
-        //#SB: supply database name
         Entity GetLaunchedEntity( string databaseName, out string error );
 
-        //#SB: supply database name, entity ID
-        string GetProps( string databaseName, out string error );
+        string GetProps( string databaseName, Guid entityID, out string error );
     }
 }

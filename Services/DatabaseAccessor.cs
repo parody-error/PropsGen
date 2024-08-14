@@ -1,4 +1,5 @@
 ﻿using PropsGen.Models;
+using System.Data;
 using System.Data.SqlClient;
 using System.Text.Json;
 
@@ -8,7 +9,9 @@ namespace PropsGen.Services
     {
         private static readonly string DB_INSTANCE = ".\\SQLSERVER2022";
         private static readonly string DB_MASTER = "master";
+
         private static readonly string ERROR_INVALID_DATABASE_NAME = "An invalid database name was supplied.";
+        private static readonly string ERROR_INVALID_ENTITY_ID = "An invalid entity ID was supplied.";
 
         private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true };
 
@@ -77,7 +80,7 @@ namespace PropsGen.Services
 
                     if ( result.Read() )
                     {
-                        entity.EntityID = result.GetGuid( 0 ).ToString();
+                        entity.EntityID = result.GetGuid( 0 );
                         entity.EntityName = result.GetString( 1 );
                     }
 
@@ -92,13 +95,19 @@ namespace PropsGen.Services
             return entity;
         }
 
-        public string GetProps( string databaseName, out string error )
+        public string GetProps( string databaseName, Guid entityID, out string error )
         {
             error = string.Empty;
 
             if ( string.IsNullOrEmpty( databaseName ) )
             {
                 error = ERROR_INVALID_DATABASE_NAME;
+                return string.Empty;
+            }
+
+            if ( entityID == Guid.Empty )
+            {
+                error = ERROR_INVALID_ENTITY_ID;
                 return string.Empty;
             }
 
@@ -110,10 +119,12 @@ namespace PropsGen.Services
                 {
                     connection.Open();
 
-                    //#SB: probably split up into multiple functions (oil, gas, ....)
-                    string query = @"select EUR, S_G, H_2_S, C_O_2 from GAS_PROPERTIES;";
+                    string query = @"select EUR, S_G, H_2_S, C_O_2 from GAS_PROPERTIES where ENTITY_ID = @entityID;";
 
                     var command = new SqlCommand( query, connection );
+                    command.Parameters.Add( "@entityID", SqlDbType.UniqueIdentifier );
+                    command.Parameters["@entityID"].Value = entityID;
+
                     var result = command.ExecuteReader();
 
                     if ( result is null || !result.HasRows || result.FieldCount != Props.FIELD_COUNT )
