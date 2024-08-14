@@ -12,6 +12,7 @@ namespace PropsGen.Services
 
         private static readonly string ERROR_INVALID_DATABASE_NAME = "An invalid database name was supplied.";
         private static readonly string ERROR_INVALID_ENTITY_ID = "An invalid entity ID was supplied.";
+        private static readonly string ERROR_READING_DATA = "Could not read props data for supplied entity.";
 
         private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true };
 
@@ -118,24 +119,8 @@ namespace PropsGen.Services
                 {
                     connection.Open();
 
-                    string query = @"select EUR, S_G, H_2_S, C_O_2 from GAS_PROPERTIES where ENTITY_ID = @entityID;";
+                    GetGasProps( connection, props, entityID, out error );
 
-                    var command = new SqlCommand( query, connection );
-                    command.Parameters.Add( "@entityID", SqlDbType.UniqueIdentifier );
-                    command.Parameters["@entityID"].Value = entityID;
-
-                    var result = command.ExecuteReader();
-
-                    if ( result is null || !result.HasRows || result.FieldCount != Props.FIELD_COUNT )
-                        return string.Empty;
-
-                    if ( result.Read() )
-                    {
-                        props.gas.EUR = result.GetDouble( 0 );
-                        props.gas.S_G = result.GetDouble( 1 );
-                        props.gas.H_2_S = result.GetDouble( 2 );
-                        props.gas.C_O_2 = result.GetDouble( 3 );
-                    }
 
                     connection.Close();
                 }
@@ -155,6 +140,42 @@ namespace PropsGen.Services
         private string GetConnectionString( string databaseName )
         {
             return $@"Data Source={DB_INSTANCE};DATABASE={databaseName};Integrated Security=True";
+        }
+
+        private bool GetGasProps( SqlConnection connection, Props props, Guid entityID, out string error )
+        {
+            error = string.Empty;
+
+            try
+            {
+                string query = @"select EUR, S_G, H_2_S, C_O_2 from GAS_PROPERTIES where ENTITY_ID = @entityID;";
+
+                var command = new SqlCommand( query, connection );
+                command.Parameters.Add( "@entityID", SqlDbType.UniqueIdentifier );
+                command.Parameters["@entityID"].Value = entityID;
+
+                var result = command.ExecuteReader();
+
+                if ( result is null || !result.HasRows || result.FieldCount != GasProps.FIELD_COUNT )
+                {
+                    error = ERROR_READING_DATA;
+                    return false;
+                }
+
+                if ( result.Read() )
+                {
+                    props.gas.EUR = result.GetDouble( 0 );
+                    props.gas.S_G = result.GetDouble( 1 );
+                    props.gas.H_2_S = result.GetDouble( 2 );
+                    props.gas.C_O_2 = result.GetDouble( 3 );
+                }
+            }
+            catch ( Exception ex )
+            {
+                error = ex.Message;
+            }
+
+            return string.IsNullOrEmpty( error );
         }
     }
 }
