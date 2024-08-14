@@ -69,7 +69,6 @@ namespace PropsGen.Services
                 {
                     connection.Open();
 
-                    //#SB: get entity_name
                     string query = @"select top(1) ENTITY_ID, LOCKED_BY from ENTITY_LOCK_INFO where LOCKED_BY is not null;";
 
                     var command = new SqlCommand( query, connection );
