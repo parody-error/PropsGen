@@ -8,6 +8,8 @@ namespace PropsGen.ViewModels
         public DelegateCommand GetPropsCommand { get; }
         public string PropsJSON { get; private set; } = string.Empty;
 
+        public string EntityName { get; private set; } = string.Empty;
+
         private IDatabaseAccessor? _databaseAccessor = null;
 
         public PropsViewModel()

@@ -4,6 +4,7 @@
     {
         IEnumerable<string> GetDatabaseNames( out string error );
 
+        string GetLaunchedEntity( out string error );
         string GetProps( out string error );
     }
 }
