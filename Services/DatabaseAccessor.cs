@@ -6,7 +6,8 @@ namespace PropsGen.Services
 {
     internal class DatabaseAccessor : IDatabaseAccessor
     {
-        private static readonly string MASTER_DB = "master";
+        private static readonly string DB_INSTANCE = ".\\SQLSERVER2022";
+        private static readonly string DB_MASTER = "master";
         private static readonly string ERROR_INVALID_DATABASE_NAME = "An invalid database name was supplied.";
 
         private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true };
@@ -19,7 +20,7 @@ namespace PropsGen.Services
 
             try
             {
-                using ( var connection = new SqlConnection( GetConnectionString( MASTER_DB ) ) )
+                using ( var connection = new SqlConnection( GetConnectionString( DB_MASTER ) ) )
                 {
                     connection.Open();
 
@@ -139,7 +140,7 @@ namespace PropsGen.Services
 
         private string GetConnectionString( string databaseName )
         {
-            return $@"Data Source=.\SQLSERVER2022;DATABASE={databaseName};Integrated Security=True";
+            return $@"Data Source={DB_INSTANCE};DATABASE={databaseName};Integrated Security=True";
         }
     }
 }
