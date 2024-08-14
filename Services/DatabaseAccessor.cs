@@ -44,11 +44,11 @@ namespace PropsGen.Services
             return databaseNames;
         }
 
-        public string GetLaunchedEntity( out string error )
+        public Entity GetLaunchedEntity( out string error )
         {
             error = string.Empty;
 
-            string entityName = string.Empty;
+            Entity entity = new Entity();
 
             try
             {
@@ -56,17 +56,19 @@ namespace PropsGen.Services
                 {
                     connection.Open();
 
-                    string query = @"select top(1) ENTITY_ID from ENTITY_LOCK_INFO where LOCKED_BY is not null;";
+                    //#SB: get entity_name
+                    string query = @"select top(1) ENTITY_ID, LOCKED_BY from ENTITY_LOCK_INFO where LOCKED_BY is not null;";
 
                     var command = new SqlCommand( query, connection );
                     var result = command.ExecuteReader();
 
                     if ( result is null || !result.HasRows )
-                        return entityName;
+                        return entity;
 
                     if ( result.Read() )
                     {
-                        entityName = result.GetString( 0 );
+                        entity.EntityID = result.GetGuid( 0 ).ToString();
+                        entity.EntityName = result.GetString( 1 );
                     }
 
                     connection.Close();
@@ -77,7 +79,7 @@ namespace PropsGen.Services
                 error = ex.Message;
             }
 
-            return entityName;
+            return entity;
         }
 
         public string GetProps( out string error )

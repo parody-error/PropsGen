@@ -5,6 +5,8 @@ namespace PropsGen.Views
 {
     public partial class ConnectionDialog : Window
     {
+        public string DatabaseName { get; private set; } = string.Empty;
+
         public ConnectionDialog()
         {
             InitializeComponent();
@@ -26,6 +28,7 @@ namespace PropsGen.Views
 
         private void OnDatabaseConnected( string databaseName )
         {
+            DatabaseName = databaseName;
             DialogResult = !string.IsNullOrEmpty( databaseName );
         }
     }
