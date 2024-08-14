@@ -137,11 +137,6 @@ namespace PropsGen.Services
             return JsonSerializer.Serialize( props, _jsonSerializerOptions );
         }
 
-        private string GetConnectionString( string databaseName )
-        {
-            return $@"Data Source={DB_INSTANCE};DATABASE={databaseName};Integrated Security=True";
-        }
-
         private bool GetGasProps( SqlConnection connection, Props props, Guid entityID, out string error )
         {
             error = string.Empty;
@@ -176,6 +171,11 @@ namespace PropsGen.Services
             }
 
             return string.IsNullOrEmpty( error );
+        }
+
+        private string GetConnectionString( string databaseName )
+        {
+            return $@"Data Source={DB_INSTANCE};DATABASE={databaseName};Integrated Security=True";
         }
     }
 }
