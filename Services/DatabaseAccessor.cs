@@ -131,10 +131,10 @@ namespace PropsGen.Services
 
                     if ( result.Read() )
                     {
-                        props.GasProps.EUR = result.GetDouble( 0 );
-                        props.GasProps.S_G = result.GetDouble( 1 );
-                        props.GasProps.H_2_S = result.GetDouble( 2 );
-                        props.GasProps.C_O_2 = result.GetDouble( 3 );
+                        props.gas.EUR = result.GetDouble( 0 );
+                        props.gas.S_G = result.GetDouble( 1 );
+                        props.gas.H_2_S = result.GetDouble( 2 );
+                        props.gas.C_O_2 = result.GetDouble( 3 );
                     }
 
                     connection.Close();

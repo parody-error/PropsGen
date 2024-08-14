@@ -2,6 +2,11 @@
 
 namespace PropsGen.Models
 {
+    internal class BasicReservoir
+    {
+        public static readonly int FIELD_COUNT = 8;
+    }
+
     internal class GasProps
     {
         public static readonly int FIELD_COUNT = 4;
@@ -23,7 +28,7 @@ namespace PropsGen.Models
         // Total number of fields to be read from the database.
         public static readonly int FIELD_COUNT = GasProps.FIELD_COUNT;
 
-        public GasProps GasProps { get; set; } = new GasProps();
+        public GasProps gas { get; set; } = new GasProps();
         public Parameters parameters { get; set; } = new Parameters();
     }
 }
