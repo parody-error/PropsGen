@@ -8,8 +8,8 @@
     xmlns:views="clr-namespace:PropsGen.Views"
     xmlns:vm="clr-namespace:PropsGen.ViewModels"
     Title="Props Generator"
-    Width="800"
-    Height="450"
+    Width="500"
+    Height="475"
     d:DataContext="{d:DesignInstance Type=vm:MainViewModel}"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
