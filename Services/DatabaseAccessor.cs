@@ -98,8 +98,7 @@ namespace PropsGen.Services
             try
             {
                 props.gas = GetGasProps( databaseName, entityID );
-
-                //#SB: other props
+                props.oil = GetOilProps( databaseName, entityID );
 
                 props.parameters = GetParameters();
             }
@@ -192,10 +191,10 @@ namespace PropsGen.Services
                     {
                         int index = 0;
 
-                        gasProps.pvtCorrelation = result.GetInt32( index++ );
-                        gasProps.viscosityCorrelation = result.GetInt32( index++ );
-                        gasProps.gasType = result.GetInt32( index++ );
-                        gasProps.rvCorrelation = result.GetInt32( index++ );
+                        gasProps.pvtCorrelation = GetInt( result, index++, 0 );
+                        gasProps.viscosityCorrelation = GetInt( result, index++, 0 );
+                        gasProps.gasType = GetInt( result, index++, 0 );
+                        gasProps.rvCorrelation = GetInt( result, index++, 0 );
                         gasProps.separatorSpecificGravity = GetDouble( result, index++, 0.65 );
                         gasProps.CO2 = GetDouble( result, index++, 0.0 );
                         gasProps.N2 = GetDouble( result, index++, 0.0 );
@@ -213,6 +212,43 @@ namespace PropsGen.Services
             return gasProps;
         }
 
+        private OilProps GetOilProps( string databaseName, Guid entityID )
+        {
+            var oilProps = new OilProps();
+
+            using ( var connection = new SqlConnection( GetConnectionString( databaseName ) ) )
+            {
+                connection.Open();
+
+                string query = Queries.OIL_PROPS;
+
+                var command = new SqlCommand( query, connection );
+                command.Parameters.Add( "@entityID", SqlDbType.UniqueIdentifier );
+                command.Parameters[ "@entityID" ].Value = entityID;
+
+                using ( var result = command.ExecuteReader() )
+                {
+                    if ( result is null || !result.HasRows || result.FieldCount != OilProps.FIELD_COUNT )
+                        throw new Exception( ERROR_READING_DATA );
+
+                    if ( result.Read() )
+                    {
+                        int index = 0;
+
+                        oilProps.pvtCorrelation = GetInt( result, index++, 0 );
+                        oilProps.viscosityCorrelation = GetInt( result, index++, 0 );
+                        oilProps.apiGravity = GetDouble( result, index++, 30.0 );
+                        oilProps.initialSaturationPressure = GetDouble( result, index++, 2500.0 );
+                        oilProps.initialSolutionGasOilRatio = GetDouble( result, index++, 0.0 );
+                    }
+                }
+
+                connection.Close();
+            }
+
+            return oilProps;
+        }
+
         Parameters GetParameters()
         {
             return new Parameters()
@@ -228,12 +264,20 @@ namespace PropsGen.Services
             return $@"Data Source={DB_INSTANCE};DATABASE={databaseName};Integrated Security=True";
         }
 
-        private double GetDouble( SqlDataReader? dataReader, int index, double defaultValue )
+        private int GetInt( SqlDataReader? reader, int index, int defaultValue )
         {
-            if ( dataReader is null )
+            if ( reader is null )
                 return defaultValue;
 
-            return dataReader.IsDBNull( index ) ? defaultValue : dataReader.GetDouble( index );
+            return reader.IsDBNull( index ) ? defaultValue : reader.GetInt32( index );
+        }
+
+        private double GetDouble( SqlDataReader? reader, int index, double defaultValue )
+        {
+            if ( reader is null )
+                return defaultValue;
+
+            return reader.IsDBNull( index ) ? defaultValue : reader.GetDouble( index );
         }
     }
 }

@@ -54,5 +54,17 @@ from ANALYSIS_GAS_PROP AGP
 where
   E.ENTITY_ID = @entityId;";
 
+        public static readonly string OIL_PROPS =
+@"select
+  0 as OIL_PVT_CORR_ID,
+  0 as OIL_VISC_CORR_ID,
+  AOP.OIL_GRAVITY,
+  AOP.BUBBLE_POINT_PRESSURE,
+  AOP.INITIAL_SOLUTION_GOR
+from ANALYSIS_OIL_PROP AOP
+  join ANALYSIS_PROP AP on (AP.ANALYSIS_PROP_ID = AOP.ANALYSIS_PROP_ID)
+  join ENTITY E on (E.FACILITY_ID = AP.FACILITY_ID)
+where
+  E.ENTITY_ID = @entityId;";
     }
 }

@@ -23,6 +23,17 @@
         public double rvOverRvSat { get; set; }
     }
 
+    internal class OilProps
+    {
+        public static readonly int FIELD_COUNT = 5;
+
+        public int pvtCorrelation { get; set; }
+        public int viscosityCorrelation { get; set; }
+        public double apiGravity { get; set; }
+        public double initialSaturationPressure { get; set; }
+        public double initialSolutionGasOilRatio { get; set; }
+    }
+
     internal class Parameters
     {
         public double temperature { get; set; }
@@ -32,6 +43,7 @@
     internal class Props
     {
         public GasProps gas { get; set; } = new GasProps();
+        public OilProps oil { get; set; } = new OilProps();
 
         public Parameters parameters { get; set; } = new Parameters();
     }
