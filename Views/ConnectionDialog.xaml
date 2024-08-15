@@ -7,8 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:PropsGen.ViewModels"
     Title="Database Connection"
-    Width="275"
-    Height="155"
+    Width="350"
+    Height="175"
     d:DataContext="{d:DesignInstance Type=vm:ConnectionViewModel}"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
@@ -17,12 +17,14 @@
             <RowDefinition />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <StackPanel
-            Grid.Row="0"
-            HorizontalAlignment="Left"
-            VerticalAlignment="Top"
-            Orientation="Horizontal">
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
             <TextBlock
+                VerticalAlignment="Top"
+                Grid.Column="0"
                 Width="Auto"
                 Height="20"
                 Margin="4"
@@ -30,13 +32,13 @@
                 Harmony Database:
             </TextBlock>
             <ComboBox
-                x:Name="DatabaseComboBox"
-                Width="140"
+                VerticalAlignment="Top"
+                Grid.Column="1"
                 Height="20"
                 Margin="4"
                 ItemsSource="{Binding Databases}"
                 SelectedItem="{Binding DatabaseName}" />
-        </StackPanel>
+        </Grid>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
