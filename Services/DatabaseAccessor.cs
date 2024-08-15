@@ -97,25 +97,18 @@ namespace PropsGen.Services
 
             try
             {
-                using ( var connection = new SqlConnection( GetConnectionString( databaseName ) ) )
-                {
-                    connection.Open();
+                props.gas = GetGasProps( databaseName, entityID );
 
-                    GetGasProps( connection, props, entityID, out error );
+                //#SB: other props
 
-                    connection.Close();
-                }
-
-                // Populate props with some default parameters
-                props.parameters.temperature = 530.0;
-                props.parameters.pressure = 3000.0;
+                props.parameters = GetParameters();
             }
             catch ( Exception ex )
             {
                 error = ex.Message;
             }
 
-            return JsonSerializer.Serialize( props, _jsonSerializerOptions );
+            return string.IsNullOrEmpty( error ) ? JsonSerializer.Serialize( props, _jsonSerializerOptions ) : error;
         }
 
         private Guid GetLaunchedEntityID( string databaseName )
@@ -176,45 +169,71 @@ namespace PropsGen.Services
             return entityName;
         }
 
-        private bool GetGasProps( SqlConnection connection, Props props, Guid entityID, out string error )
+        private GasProps GetGasProps( string databaseName, Guid entityID )
         {
-            error = string.Empty;
+            var gasProps = new GasProps();
 
-            try
+            using ( var connection = new SqlConnection( GetConnectionString( databaseName ) ) )
             {
-                string query = @"select EUR, S_G, H_2_S, C_O_2 from GAS_PROPERTIES where ENTITY_ID = @entityID;";
+                connection.Open();
+
+                string query = Queries.GAS_PROPS;
 
                 var command = new SqlCommand( query, connection );
                 command.Parameters.Add( "@entityID", SqlDbType.UniqueIdentifier );
                 command.Parameters[ "@entityID" ].Value = entityID;
 
-                var result = command.ExecuteReader();
-
-                if ( result is null || !result.HasRows || result.FieldCount != GasProps.FIELD_COUNT )
+                using ( var result = command.ExecuteReader() )
                 {
-                    error = ERROR_READING_DATA;
-                    return false;
+                    if ( result is null || !result.HasRows || result.FieldCount != GasProps.FIELD_COUNT )
+                        throw new Exception( ERROR_READING_DATA );
+
+                    if ( result.Read() )
+                    {
+                        int index = 0;
+
+                        gasProps.pvtCorrelation = result.GetInt32( index++ );
+                        gasProps.viscosityCorrelation = result.GetInt32( index++ );
+                        gasProps.gasType = result.GetInt32( index++ );
+                        gasProps.rvCorrelation = result.GetInt32( index++ );
+                        gasProps.separatorSpecificGravity = GetDouble( result, index++, 0.65 );
+                        gasProps.CO2 = GetDouble( result, index++, 0.0 );
+                        gasProps.N2 = GetDouble( result, index++, 0.0 );
+                        gasProps.H2S = GetDouble( result, index++, 0.0 );
+                        gasProps.separatorPressure = GetDouble( result, index++, 100.0 );
+                        gasProps.separatorTemperature = GetDouble( result, index++, 530.0 );
+                        gasProps.condensateGasRatio = GetDouble( result, index++, 100.0 );
+                        gasProps.rvOverRvSat = 1.0;
+                    }
                 }
 
-                if ( result.Read() )
-                {
-                    props.gas.EUR = result.GetDouble( 0 );
-                    props.gas.S_G = result.GetDouble( 1 );
-                    props.gas.H_2_S = result.GetDouble( 2 );
-                    props.gas.C_O_2 = result.GetDouble( 3 );
-                }
+                connection.Close();
             }
-            catch ( Exception ex )
+
+            return gasProps;
+        }
+
+        Parameters GetParameters()
+        {
+            return new Parameters()
             {
-                error = ex.Message;
-            }
-
-            return string.IsNullOrEmpty( error );
+                // Populate with some default parameters
+                temperature = 530.0,
+                pressure = 3000.0
+            };
         }
 
         private string GetConnectionString( string databaseName )
         {
             return $@"Data Source={DB_INSTANCE};DATABASE={databaseName};Integrated Security=True";
+        }
+
+        private double GetDouble( SqlDataReader? dataReader, int index, double defaultValue )
+        {
+            if ( dataReader is null )
+                return defaultValue;
+
+            return dataReader.IsDBNull( index ) ? defaultValue : dataReader.GetDouble( index );
         }
     }
 }
