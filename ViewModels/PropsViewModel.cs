@@ -2,6 +2,7 @@
 using PropsGen.Services;
 using System.Windows;
 using System.Windows.Threading;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PropsGen.ViewModels
 {
@@ -12,8 +13,21 @@ namespace PropsGen.ViewModels
         public DelegateCommand GetPropsCommand { get; }
         private bool CanExecuteGetProps => !string.IsNullOrEmpty( DatabaseName ) && EntityID != Guid.Empty;
 
+        public DelegateCommand CopyPropsCommand { get; }
+        private bool CanExecuteCopyProps => !string.IsNullOrEmpty( PropsJSON );
+
         public string DatabaseName { get; set; } = string.Empty;
-        public string PropsJSON { get; private set; } = string.Empty;
+
+        private string _propsJSON = string.Empty;
+        public string PropsJSON
+        {
+            get => _propsJSON;
+            set
+            {
+                _propsJSON = value;
+                CopyPropsCommand.RaiseCanExecuteChanged();
+            }
+        }
 
         private Guid _entityID = Guid.Empty;
         public Guid EntityID
@@ -21,7 +35,7 @@ namespace PropsGen.ViewModels
             get => _entityID;
             private set
             {
-                if(  _entityID != value )
+                if ( _entityID != value )
                 {
                     _entityID = value;
                     GetPropsCommand.RaiseCanExecuteChanged();
@@ -35,7 +49,7 @@ namespace PropsGen.ViewModels
             get => _entityName;
             private set
             {
-                if( string.Compare( _entityName, value, StringComparison.OrdinalIgnoreCase ) != 0 )
+                if ( string.Compare( _entityName, value, StringComparison.OrdinalIgnoreCase ) != 0 )
                 {
                     _entityName = value;
                     OnPropertyChanged( nameof( EntityName ) );
@@ -50,6 +64,11 @@ namespace PropsGen.ViewModels
             GetPropsCommand = new DelegateCommand(
                 ExecuteGetProps,
                 () => CanExecuteGetProps
+            );
+
+            CopyPropsCommand = new DelegateCommand(
+                ExecuteCopyProps,
+                () => CanExecuteCopyProps
             );
 
             StartTimer();
@@ -80,12 +99,15 @@ namespace PropsGen.ViewModels
             var json = databaseAccessor.GetProps( DatabaseName, EntityID, out string error );
             PropsJSON = !string.IsNullOrEmpty( error ) ? error : json;
 
-            if( string.IsNullOrEmpty( error ) )
-            {
-                Clipboard.SetText( PropsJSON );
-            }
-
             OnPropertyChanged( nameof( PropsJSON ) );
+        }
+
+        private void ExecuteCopyProps()
+        {
+            if ( !CanExecuteCopyProps )
+                return;
+
+            Clipboard.SetText( PropsJSON );
         }
 
         private void UpdateSelectedEntity()
@@ -94,7 +116,7 @@ namespace PropsGen.ViewModels
                 return;
 
             var databaseAccessor = DatabaseAccessorFactory.GetDatabaseAccessor();
-            if( databaseAccessor is null )
+            if ( databaseAccessor is null )
                 return;
 
             var entity = databaseAccessor.GetLaunchedEntity( DatabaseName, out string error );
