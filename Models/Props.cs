@@ -34,6 +34,16 @@
         public double initialSolutionGasOilRatio { get; set; }
     }
 
+    internal class WaterProps
+    {
+        public static readonly int FIELD_COUNT = 4;
+
+        public int generalCorrelation { get; set; }
+        public double specificGravity { get; set; }
+        public double salinity { get; set; }
+        public bool isSaturated { get; set; }
+    }
+
     internal class Parameters
     {
         public double temperature { get; set; }
@@ -44,6 +54,7 @@
     {
         public GasProps gas { get; set; } = new GasProps();
         public OilProps oil { get; set; } = new OilProps();
+        public WaterProps water { get; set; } = new WaterProps();
 
         public Parameters parameters { get; set; } = new Parameters();
     }

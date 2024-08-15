@@ -99,6 +99,7 @@ namespace PropsGen.Services
             {
                 props.gas = GetGasProps( databaseName, entityID );
                 props.oil = GetOilProps( databaseName, entityID );
+                props.water = GetWaterProps( databaseName, entityID );
 
                 props.parameters = GetParameters();
             }
@@ -110,7 +111,7 @@ namespace PropsGen.Services
             return string.IsNullOrEmpty( error ) ? JsonSerializer.Serialize( props, _jsonSerializerOptions ) : error;
         }
 
-        private Guid GetLaunchedEntityID( string databaseName )
+        private static Guid GetLaunchedEntityID( string databaseName )
         {
             Guid entityID = Guid.Empty;
 
@@ -136,7 +137,7 @@ namespace PropsGen.Services
             return entityID;
         }
 
-        private string GetLaunchedEntityName( string databaseName, Guid entityID )
+        private static string GetLaunchedEntityName( string databaseName, Guid entityID )
         {
             if ( entityID == Guid.Empty )
                 return string.Empty;
@@ -168,7 +169,7 @@ namespace PropsGen.Services
             return entityName;
         }
 
-        private GasProps GetGasProps( string databaseName, Guid entityID )
+        private static GasProps GetGasProps( string databaseName, Guid entityID )
         {
             var gasProps = new GasProps();
 
@@ -212,7 +213,7 @@ namespace PropsGen.Services
             return gasProps;
         }
 
-        private OilProps GetOilProps( string databaseName, Guid entityID )
+        private static OilProps GetOilProps( string databaseName, Guid entityID )
         {
             var oilProps = new OilProps();
 
@@ -249,7 +250,43 @@ namespace PropsGen.Services
             return oilProps;
         }
 
-        Parameters GetParameters()
+        private static WaterProps GetWaterProps( string databaseName, Guid entityID )
+        {
+            var waterProps = new WaterProps();
+
+            using ( var connection = new SqlConnection( GetConnectionString( databaseName ) ) )
+            {
+                connection.Open();
+
+                string query = Queries.WATER_PROPS;
+
+                var command = new SqlCommand( query, connection );
+                command.Parameters.Add( "@entityID", SqlDbType.UniqueIdentifier );
+                command.Parameters[ "@entityID" ].Value = entityID;
+
+                using ( var result = command.ExecuteReader() )
+                {
+                    if ( result is null || !result.HasRows || result.FieldCount != WaterProps.FIELD_COUNT )
+                        throw new Exception( ERROR_READING_DATA );
+
+                    if ( result.Read() )
+                    {
+                        int index = 0;
+
+                        waterProps.generalCorrelation = GetInt( result, index++, 0 );
+                        waterProps.specificGravity = GetDouble( result, index++, 1.0 );
+                        waterProps.salinity = GetDouble( result, index++, 0.0 );
+                        waterProps.isSaturated = GetBool( result, index++, false );
+                    }
+                }
+
+                connection.Close();
+            }
+
+            return waterProps;
+        }
+
+        private static Parameters GetParameters()
         {
             return new Parameters()
             {
@@ -259,12 +296,20 @@ namespace PropsGen.Services
             };
         }
 
-        private string GetConnectionString( string databaseName )
+        private static string GetConnectionString( string databaseName )
         {
             return $@"Data Source={DB_INSTANCE};DATABASE={databaseName};Integrated Security=True";
         }
 
-        private int GetInt( SqlDataReader? reader, int index, int defaultValue )
+        private static bool GetBool( SqlDataReader? reader, int index, bool defaultValue )
+        {
+            if ( reader is null )
+                return defaultValue;
+
+            return reader.IsDBNull( index ) ? defaultValue : reader.GetInt32( index ) == 1;
+        }
+
+        private static int GetInt( SqlDataReader? reader, int index, int defaultValue )
         {
             if ( reader is null )
                 return defaultValue;
@@ -272,7 +317,7 @@ namespace PropsGen.Services
             return reader.IsDBNull( index ) ? defaultValue : reader.GetInt32( index );
         }
 
-        private double GetDouble( SqlDataReader? reader, int index, double defaultValue )
+        private static double GetDouble( SqlDataReader? reader, int index, double defaultValue )
         {
             if ( reader is null )
                 return defaultValue;

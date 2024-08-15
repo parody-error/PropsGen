@@ -18,7 +18,7 @@ from
 where
   LOCKED_BY is not null;";
 
-        public static readonly string LAUNCHED_ENTITY_NAME = 
+        public static readonly string LAUNCHED_ENTITY_NAME =
 @"select
   COALESCE( W.WELL_NAME, W.DLS, UCG.CUSTOM_GROUP_NAME, E.ENTITY_NAME ) as ENTITY_NAME
 from ENTITY E
@@ -66,5 +66,17 @@ from ANALYSIS_OIL_PROP AOP
   join ENTITY E on (E.FACILITY_ID = AP.FACILITY_ID)
 where
   E.ENTITY_ID = @entityId;";
+
+        public static readonly string WATER_PROPS =
+@"select
+  0 as GENERAL_CORR_ID,
+  AWP.WATER_GRAVITY,
+  AWP.SALINITY,
+  AWP.IS_WTR_GAS_SATURATED
+from ANALYSIS_WATER_PROP AWP
+  join ANALYSIS_PROP AP on (AP.ANALYSIS_PROP_ID = AWP.ANALYSIS_PROP_ID)
+  join ENTITY E on (E.FACILITY_ID = AP.FACILITY_ID)
+where
+  E.ENTITY_ID = @entityId";
     }
 }
