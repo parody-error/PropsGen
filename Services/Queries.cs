@@ -25,7 +25,7 @@ from ENTITY E
   left join WELL W on (W.WELL_ID = E.FACILITY_ID)
   left join USER_CUSTOM_GROUPS UCG on (UCG.ENTITY_ID = E.ENTITY_ID)
 where
-  E.ENTITY_ID = @entityId;";
+  E.ENTITY_ID = @entityID;";
 
         public static readonly string RESERVOIR_PROPS =
 @"select
@@ -42,7 +42,7 @@ from RESERVOIR_DATA RD
   join ANALYSIS_FORMATION_PROP AFP on (AFP.ANALYSIS_PROP_ID = RD.ANALYSIS_PROP_ID)
   join ENTITY E on (E.FACILITY_ID = AP.FACILITY_ID)
 where
-  E.ENTITY_ID = @entityId;";
+  E.ENTITY_ID = @entityID;";
 
         public static readonly string GAS_PROPS =
 @"select
@@ -69,7 +69,7 @@ from ANALYSIS_GAS_PROP AGP
   join ANALYSIS_PROP AP on (AP.ANALYSIS_PROP_ID = AGP.ANALYSIS_PROP_ID)
   join ENTITY E on (E.FACILITY_ID = AP.FACILITY_ID)
 where
-  E.ENTITY_ID = @entityId;";
+  E.ENTITY_ID = @entityID;";
 
         public static readonly string OIL_PROPS =
 @"select
@@ -82,7 +82,7 @@ from ANALYSIS_OIL_PROP AOP
   join ANALYSIS_PROP AP on (AP.ANALYSIS_PROP_ID = AOP.ANALYSIS_PROP_ID)
   join ENTITY E on (E.FACILITY_ID = AP.FACILITY_ID)
 where
-  E.ENTITY_ID = @entityId;";
+  E.ENTITY_ID = @entityID;";
 
         public static readonly string WATER_PROPS =
 @"select
@@ -94,7 +94,7 @@ from ANALYSIS_WATER_PROP AWP
   join ANALYSIS_PROP AP on (AP.ANALYSIS_PROP_ID = AWP.ANALYSIS_PROP_ID)
   join ENTITY E on (E.FACILITY_ID = AP.FACILITY_ID)
 where
-  E.ENTITY_ID = @entityId";
+  E.ENTITY_ID = @entityID";
 
         public static readonly string RELATIVE_PERMEABILITY_PROPS =
 @"select
@@ -119,6 +119,6 @@ from RELATIVE_PERMEABILITY RP
   join ANALYSIS_PROP AP on (AP.ANALYSIS_PROP_ID = RP.ANALYSIS_PROP_ID) 
   join ENTITY E on (E.FACILITY_ID = AP.FACILITY_ID)
 where
-  E.ENTITY_ID = @entityId;";
+  E.ENTITY_ID = @entityID;";
     }
 }
