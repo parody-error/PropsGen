@@ -1,7 +1,7 @@
-﻿using PropsGen.Models;
-using System.Data;
+﻿using System.Data;
 using System.Data.SqlClient;
 using System.Text.Json;
+using PropsGen.Models;
 
 namespace PropsGen.Services
 {
@@ -97,6 +97,7 @@ namespace PropsGen.Services
 
             try
             {
+                props.basicReservoir = GetReservoirProps( databaseName, entityID );
                 props.gas = GetGasProps( databaseName, entityID );
                 props.oil = GetOilProps( databaseName, entityID );
                 props.water = GetWaterProps( databaseName, entityID );
@@ -167,6 +168,46 @@ namespace PropsGen.Services
             }
 
             return entityName;
+        }
+
+        private static ReservoirProps GetReservoirProps( string databaseName, Guid entityID )
+        {
+            var reservoirProps = new ReservoirProps();
+
+            using ( var connection = new SqlConnection( GetConnectionString( databaseName ) ) )
+            {
+                connection.Open();
+
+                string query = Queries.RESERVOIR_PROPS;
+
+                var command = new SqlCommand( query, connection );
+                command.Parameters.Add( "@entityID", SqlDbType.UniqueIdentifier );
+                command.Parameters[ "@entityID" ].Value = entityID;
+
+                using ( var result = command.ExecuteReader() )
+                {
+                    if ( result is null || !result.HasRows || result.FieldCount != ReservoirProps.FIELD_COUNT )
+                        throw new Exception( ERROR_READING_DATA );
+
+                    if ( result.Read() )
+                    {
+                        int index = 0;
+
+                        reservoirProps.temperature = GetDouble( result, index++, 580.0 );
+                        reservoirProps.pressure = GetDouble( result, index++, 3000.0 );
+                        reservoirProps.netPay = GetDouble( result, index++, 100.0 );
+                        reservoirProps.porosity = GetDouble( result, index++, 0.10 );
+                        reservoirProps.gasSaturation = GetDouble( result, index++, 0.10 );
+                        reservoirProps.oilSaturation = GetDouble( result, index++, 0.40 );
+                        reservoirProps.waterSaturation = GetDouble( result, index++, 0.50 );
+                        reservoirProps.initialFormationCompressibility = GetDouble( result, index++, 1e-9 );
+                    }
+                }
+
+                connection.Close();
+            }
+
+            return reservoirProps;
         }
 
         private static GasProps GetGasProps( string databaseName, Guid entityID )
