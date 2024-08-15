@@ -101,6 +101,7 @@ namespace PropsGen.Services
                 props.gas = GetGasProps( databaseName, entityID );
                 props.oil = GetOilProps( databaseName, entityID );
                 props.water = GetWaterProps( databaseName, entityID );
+                props.relativePermeability = GetRelativePermeabilityProps( databaseName, entityID );
 
                 props.parameters = GetParameters();
             }
@@ -325,6 +326,53 @@ namespace PropsGen.Services
             }
 
             return waterProps;
+        }
+
+        private static RelativePermeabilityProps GetRelativePermeabilityProps( string databaseName, Guid entityID )
+        {
+            var relPermProps = new RelativePermeabilityProps();
+
+            using ( var connection = new SqlConnection( GetConnectionString( databaseName ) ) )
+            {
+                connection.Open();
+
+                string query = Queries.RELATIVE_PERMEABILITY_PROPS;
+
+                var command = new SqlCommand( query, connection );
+                command.Parameters.Add( "@entityID", SqlDbType.UniqueIdentifier );
+                command.Parameters[ "@entityID" ].Value = entityID;
+
+                using ( var result = command.ExecuteReader() )
+                {
+                    if ( result is null || !result.HasRows || result.FieldCount != RelativePermeabilityProps.FIELD_COUNT )
+                        throw new Exception( ERROR_READING_DATA );
+
+                    if ( result.Read() )
+                    {
+                        int index = 0;
+
+                        relPermProps.twoPhaseCorrelation = GetInt( result, index++, 0 );
+                        relPermProps.threePhaseCorrelation = GetInt( result, index++, 0 );
+                        relPermProps.Swirr = GetDouble( result, index++, 0.2 );
+                        relPermProps.Sgc = GetDouble( result, index++, 0.05 );
+                        relPermProps.Sorg = GetDouble( result, index++, 0.2 );
+                        relPermProps.Sorw = GetDouble( result, index++, 0.2 );
+                        relPermProps.krw_Sgc = GetDouble( result, index++, 1.0 );
+                        relPermProps.krg_Swirr = GetDouble( result, index++, 1.0 );
+                        relPermProps.krg_Sorg = GetDouble( result, index++, 0.5 );
+                        relPermProps.kro_Swirr = GetDouble( result, index++, 1.0 );
+                        relPermProps.krw_Sorw = GetDouble( result, index++, 0.6 );
+                        relPermProps.nw = GetDouble( result, index++, 3.0 );
+                        relPermProps.ng = GetDouble( result, index++, 1.5 );
+                        relPermProps.nog = GetDouble( result, index++, 2.5 );
+                        relPermProps.now = GetDouble( result, index++, 2.0 );
+                    }
+                }
+
+                connection.Close();
+            }
+
+            return relPermProps;
         }
 
         private static Parameters GetParameters()
