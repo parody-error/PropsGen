@@ -103,7 +103,7 @@ namespace PropsGen.Services
                 props.water = GetWaterProps( databaseName, entityID );
                 props.relativePermeability = GetRelativePermeabilityProps( databaseName, entityID );
 
-                props.parameters = GetParameters();
+                props.parameters = GetParameters( props );
             }
             catch ( Exception ex )
             {
@@ -375,13 +375,12 @@ namespace PropsGen.Services
             return relPermProps;
         }
 
-        private static Parameters GetParameters()
+        private static Parameters GetParameters( Props props )
         {
             return new Parameters()
             {
-                // Populate with some default parameters
-                temperature = 530.0,
-                pressure = 3000.0
+                temperature = props.basicReservoir.temperature,
+                pressure = props.basicReservoir.pressure
             };
         }
 
